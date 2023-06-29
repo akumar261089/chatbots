@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot Webpage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 20px;
+        }
+
+        .chat-history {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+        }
+
+        .user-message {
+            text-align: right;
+        }
+
+        .bot-message {
+            text-align: left;
+        }
+
+        .message-content {
+            background-color: #f2f2f2;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .user-label {
+            text-align: right;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .bot-label {
+            text-align: left;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .user-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 10px;
+           
+        }
+
+        .send-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .send-button:hover {
+            
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>Chatbot</h1>
+
+        <ul class="chat-history" id="chatHistory"></ul>
+
+        <input type="text" id="userInput" class="user-input" placeholder="Type your message..." />
+        <button onclick="sendUserInput()" class="send-button">Send</button>
+        <p id="errorMessage" class="error-message"></p>
+    </div>
+
+    <script>
+        function displayMessage(message, sender) {
+            var chatHistory = document.getElementById("chatHistory");
+            var messageContainer = document.createElement("li");
+            var messageContent = document.createElement("div");
+
+            messageContent.className = "message-content";
+            messageContent.innerText = message;
+
+            var label = document.createElement("div");
+            if (sender === "user") {
+                messageContainer.className = "chat-message user-message";
+                label.className = "user-label";
+                label.innerText = "User";
+                messageContainer.appendChild(label);
+                messageContainer.appendChild(messageContent);
+            } else if (sender === "bot") {
+                messageContainer.className = "chat-message bot-message";
+                label.className = "bot-label";
+                label.innerText = "Bot";
+                messageContainer.appendChild(label);
+                messageContainer.appendChild(messageContent);
+            }
+
+            chatHistory.appendChild(messageContainer);
+        }
+
+        function sendUserInput() {
+            var userInput = document.getElementById("userInput").value.trim();
+            console.log("User message: " +userInput)
+            if (userInput === "") {
+                return;
+            }
+
+            // Clear input field
+            document.getElementById("userInput").value = "";
+
+            // Display user input in chat history
+            displayMessage(userInput, "user");
+
+            // Send user input to the server using a POST request
+            $.ajax({
+                url: "http://127.0.0.1:5000/input",
+                type: "POST",
+                data: JSON.stringify({ input: userInput }),
+                contentType: "application/json",
+                success: function (response) {
+                    // Display response in chat history
+                    displayMessage(response, "bot");
+                    document.getElementById("errorMessage").innerText = "";
+                },
+                error: function () {
+                    // Display error message in chat history
+                    displayMessage("Failed to communicate with the server.", "error");
+                    document.getElementById("errorMessage").innerText = "Error: Failed to communicate with the server.";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
